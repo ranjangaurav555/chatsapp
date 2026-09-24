@@ -1,4 +1,5 @@
 const Message = require("../models/Message");
+const { Op } = require("sequelize");
 
 
 // ==========================================
@@ -16,8 +17,6 @@ const sendMessage = async (req, res) => {
         } = req.body;
 
 
-        // Check required fields
-
         if (
             !senderId ||
             !receiverId ||
@@ -33,8 +32,6 @@ const sendMessage = async (req, res) => {
 
         }
 
-
-        // Save message
 
         const newMessage =
             await Message.create({
@@ -61,6 +58,7 @@ const sendMessage = async (req, res) => {
 
         });
 
+
     } catch (error) {
 
         console.error(
@@ -82,7 +80,7 @@ const sendMessage = async (req, res) => {
 
 
 // ==========================================
-// GET CHAT MESSAGES
+// GET MESSAGES
 // ==========================================
 
 const getMessages = async (req, res) => {
@@ -94,8 +92,6 @@ const getMessages = async (req, res) => {
             user2
         } = req.query;
 
-
-        // Check users
 
         if (
             !user1 ||
@@ -112,22 +108,22 @@ const getMessages = async (req, res) => {
         }
 
 
-        // Get messages between two users
-
         const messages =
             await Message.findAll({
 
                 where: {
 
-                    [require("sequelize").Op.or]: [
+                    [Op.or]: [
 
                         {
                             senderId: user1,
+
                             receiverId: user2
                         },
 
                         {
                             senderId: user2,
+
                             receiverId: user1
                         }
 
@@ -136,7 +132,12 @@ const getMessages = async (req, res) => {
                 },
 
                 order: [
-                    ["createdAt", "ASC"]
+
+                    [
+                        "createdAt",
+                        "ASC"
+                    ]
+
                 ]
 
             });
@@ -148,6 +149,7 @@ const getMessages = async (req, res) => {
                 messages
 
         });
+
 
     } catch (error) {
 
