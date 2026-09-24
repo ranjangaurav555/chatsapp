@@ -5,9 +5,7 @@ const http = require("http");
 
 const sequelize = require("./db");
 
-const {
-    setupWebSocket
-} = require("./websocket");
+const { Server } = require("socket.io");
 
 
 const app = express();
@@ -91,14 +89,109 @@ app.use(
 const server =
     http.createServer(app);
 
-
+// socket.io
+    const io =
+    new Server(server, {
+        cors: {
+            origin: "*"
+        }
+    });
+    
+    app.set(
+    "io",
+    io
+);
+    // ==========================================
+// SOCKET.IO
 // ==========================================
-// SETUP WEBSOCKET
-// ==========================================
 
-setupWebSocket(server);
+const socketUsers = new Map();
 
 
+io.on("connection", function (socket) {
+
+    console.log(
+        "Socket.IO client connected:",
+        socket.id
+    );
+
+
+    // ==========================================
+    // REGISTER USER
+    // ==========================================
+
+    socket.on(
+        "register",
+        function (userId) {
+
+                   console.log(
+            "REGISTER EVENT RECEIVED:",
+            userId
+        );
+
+            const userIdString =
+                String(userId);
+
+                  // Join user-specific Socket.IO room
+        socket.join(`user_${userIdString}`);
+
+
+            socketUsers.set(
+                userIdString,
+                socket.id
+            );
+
+
+            socket.userId =
+                userIdString;
+
+
+            console.log(
+                "Socket.IO user registered:",
+                userIdString
+            );
+
+
+            console.log(
+                "Connected Socket.IO users:",
+                Array.from(
+                    socketUsers.keys()
+                )
+            );
+
+        }
+    );
+
+
+    // ==========================================
+    // DISCONNECT
+    // ==========================================
+
+    socket.on(
+        "disconnect",
+        function () {
+
+            if (
+                socket.userId &&
+                socketUsers.get(socket.userId) === socket.id
+            ) {
+
+                socketUsers.delete(
+                    socket.userId
+                );
+
+
+                console.log(
+                    "Socket.IO user disconnected:",
+                    socket.userId
+                );
+
+            }
+
+        }
+    );
+
+});
 // ==========================================
 // DATABASE + SERVER
 // ==========================================
@@ -120,7 +213,7 @@ sequelize.sync()
                 );
 
                 console.log(
-                    "WebSocket Server Running"
+                    "Socket.IO Server Running"
                 );
 
             }

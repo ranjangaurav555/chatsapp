@@ -18,6 +18,64 @@ const currentUser =
     JSON.parse(userData);
 
 
+    // ==========================================
+// SOCKET.IO CONNECTION
+// ==========================================
+
+const socketIO =
+    io("http://localhost:3000");
+
+
+socketIO.on(
+    "connect",
+    function () {
+
+        console.log(
+            "Socket.IO connected:",
+            socketIO.id
+        );
+
+
+        // Register current user with Socket.IO server
+        socketIO.emit(
+            "register",
+            currentUser.id
+        );
+
+
+        console.log(
+            "Socket.IO user registered:",
+            currentUser.id
+        );
+
+    }
+);
+
+// ==========================================
+// RECEIVE NEW MESSAGE USING SOCKET.IO
+// ==========================================
+
+socketIO.on(
+    "new_message",
+    function (message) {
+
+        console.log(
+            "Socket.IO message received:",
+            message
+        );
+
+
+        // Display message in chat
+        displayMessage(message);
+
+
+        // Scroll chat to bottom
+        scrollToBottom();
+
+    }
+);
+
+
 
     // ==========================================
 // WEBSOCKET
@@ -376,7 +434,7 @@ let selectedUser = null;
 // START WEBSOCKET
 // ==========================================
 
-connectWebSocket();
+//connectWebSocket();
 
 // ==========================================
 // LOAD USERS
