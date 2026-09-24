@@ -18,6 +18,306 @@ const currentUser =
     JSON.parse(userData);
 
 
+
+    // ==========================================
+// WEBSOCKET
+// ==========================================
+
+let socket = null;
+
+
+function connectWebSocket() {
+
+    const protocol =
+        window.location.protocol === "https:"
+            ? "wss://"
+            : "ws://";
+
+
+    socket =
+        new WebSocket(
+            protocol +
+            window.location.host
+        );
+
+
+    // ==========================================
+    // CONNECTION OPEN
+    // ==========================================
+
+    socket.addEventListener(
+        "open",
+        function () {
+
+            console.log(
+                "WebSocket connected"
+            );
+
+
+            // Register current user
+            socket.send(
+                JSON.stringify({
+
+                    type: "register",
+
+                    userId:
+                        currentUser.id
+
+                })
+            );
+
+        }
+    );
+
+
+   // ==========================================
+// RECEIVE LIVE MESSAGE
+// ==========================================
+
+socket.addEventListener(
+    "message",
+    function (event) {
+
+        console.log(
+            "================================="
+        );
+
+        console.log(
+            "WEBSOCKET MESSAGE RECEIVED"
+        );
+
+        console.log(
+            "Raw data:",
+            event.data
+        );
+
+
+        try {
+
+            const data =
+                JSON.parse(
+                    event.data
+                );
+
+
+            console.log(
+                "Parsed data:",
+                data
+            );
+
+
+            // ==========================================
+            // CHECK MESSAGE TYPE
+            // ==========================================
+
+            if (
+                data.type !==
+                "new_message"
+            ) {
+
+                console.log(
+                    "Unknown WebSocket message type:",
+                    data.type
+                );
+
+                return;
+
+            }
+
+
+            const message =
+                data.message;
+
+
+            console.log(
+                "Live message object:",
+                message
+            );
+
+
+            // ==========================================
+            // CURRENT USER
+            // ==========================================
+
+            console.log(
+                "Current user ID:",
+                currentUser.id
+            );
+
+
+            // ==========================================
+            // SELECTED USER
+            // ==========================================
+
+            console.log(
+                "Selected user:",
+                selectedUser
+            );
+
+
+            if (!selectedUser) {
+
+                console.log(
+                    "No chat is currently selected"
+                );
+
+                return;
+
+            }
+
+
+            // ==========================================
+            // CONVERT IDs TO NUMBER
+            // ==========================================
+
+            const senderId =
+                Number(
+                    message.senderId
+                );
+
+            const receiverId =
+                Number(
+                    message.receiverId
+                );
+
+            const currentUserId =
+                Number(
+                    currentUser.id
+                );
+
+            const selectedUserId =
+                Number(
+                    selectedUser.id
+                );
+
+
+            console.log(
+                "senderId:",
+                senderId
+            );
+
+            console.log(
+                "receiverId:",
+                receiverId
+            );
+
+            console.log(
+                "currentUserId:",
+                currentUserId
+            );
+
+            console.log(
+                "selectedUserId:",
+                selectedUserId
+            );
+
+
+            // ==========================================
+            // CHECK CURRENT CHAT
+            // ==========================================
+
+            const isCurrentChat =
+
+                senderId ===
+                    selectedUserId
+
+                &&
+
+                receiverId ===
+                    currentUserId;
+
+
+            console.log(
+                "Is current chat:",
+                isCurrentChat
+            );
+
+
+            if (!isCurrentChat) {
+
+                console.log(
+                    "Message is not for currently selected chat"
+                );
+
+                return;
+
+            }
+
+
+            // ==========================================
+            // DISPLAY MESSAGE
+            // ==========================================
+
+            displayMessage(
+                message
+            );
+
+
+            scrollToBottom();
+
+
+            console.log(
+                "LIVE MESSAGE DISPLAYED SUCCESSFULLY"
+            );
+
+
+            console.log(
+                "================================="
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "WebSocket Receive Error:",
+                error
+            );
+
+        }
+
+    }
+);
+    // ==========================================
+    // CONNECTION CLOSED
+    // ==========================================
+
+    socket.addEventListener(
+        "close",
+        function () {
+
+            console.log(
+                "WebSocket disconnected"
+            );
+
+
+            // Try to reconnect
+            setTimeout(
+                connectWebSocket,
+                2000
+            );
+
+        }
+    );
+
+
+    // ==========================================
+    // CONNECTION ERROR
+    // ==========================================
+
+    socket.addEventListener(
+        "error",
+        function (error) {
+
+            console.error(
+                "WebSocket Error:",
+                error
+            );
+
+        }
+    );
+
+}
+
 // ==========================================
 // ELEMENTS
 // ==========================================
@@ -72,6 +372,11 @@ myAvatar.textContent =
 
 let selectedUser = null;
 
+// ==========================================
+// START WEBSOCKET
+// ==========================================
+
+connectWebSocket();
 
 // ==========================================
 // LOAD USERS

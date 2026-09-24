@@ -1,6 +1,10 @@
 const Message = require("../models/Message");
 const { Op } = require("sequelize");
 
+const {
+    sendMessageToUser
+} = require("../websocket");
+
 
 // ==========================================
 // SEND MESSAGE
@@ -46,6 +50,24 @@ const sendMessage = async (req, res) => {
                     message
 
             });
+
+            // ==========================================
+// SEND LIVE MESSAGE
+// ==========================================
+
+console.log(
+    "Sending live message to receiver:",
+    receiverId
+);
+
+sendMessageToUser(
+    receiverId,
+    {
+        type: "new_message",
+        message: newMessage
+    }
+);
+
 
 
         return res.status(201).json({

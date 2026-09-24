@@ -1,61 +1,133 @@
-const sequelize = require("./db");
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const http = require("http");
+
+const sequelize = require("./db");
+
+const {
+    setupWebSocket
+} = require("./websocket");
+
 
 const app = express();
 
+
+// ==========================================
+// MIDDLEWARE
+// ==========================================
+
 app.use(cors());
 
-app.use(express.json());
+app.use(
+    express.json()
+);
 
 
-// Frontend folder
-app.use(express.static(path.join(__dirname, "public")));
+// ==========================================
+// STATIC FILES
+// ==========================================
+
+app.use(
+    express.static(
+        path.join(
+            __dirname,
+            "public"
+        )
+    )
+);
 
 
-// Login page
-app.get("/", (req, res) => {
+// ==========================================
+// HOME ROUTE
+// ==========================================
+
+app.get("/", function (req, res) {
 
     res.sendFile(
-        path.join(__dirname, "public", "login.html")
+        path.join(
+            __dirname,
+            "public",
+            "login.html"
+        )
     );
 
 });
 
 
-// API
-const userRoutes = require("./routes/userRoutes");
-
-const messageRoutes =  require("./routes/messageRoutes");
+// ==========================================
+// LOAD MODELS
+// ==========================================
 
 require("./models/Message");
 
-app.use("/api/users", userRoutes);
 
-app.use("/api/messages", messageRoutes
+// ==========================================
+// ROUTES
+// ==========================================
+
+const userRoutes =
+    require("./routes/userRoutes");
+
+const messageRoutes =
+    require("./routes/messageRoutes");
+
+
+app.use(
+    "/api/users",
+    userRoutes
+);
+
+app.use(
+    "/api/messages",
+    messageRoutes
 );
 
 
-// Server
+// ==========================================
+// CREATE HTTP SERVER
+// ==========================================
+
+const server =
+    http.createServer(app);
+
+
+// ==========================================
+// SETUP WEBSOCKET
+// ==========================================
+
+setupWebSocket(server);
+
+
+// ==========================================
+// DATABASE + SERVER
+// ==========================================
+
 sequelize.sync()
-    .then(() => {
+    .then(function () {
 
         console.log(
             "Database Tables Created Successfully"
         );
 
 
-        app.listen(3000, () => {
+        server.listen(
+            3000,
+            function () {
 
-            console.log(
-                "Server Running on http://localhost:3000"
-            );
+                console.log(
+                    "Server Running on http://localhost:3000"
+                );
 
-        });
+                console.log(
+                    "WebSocket Server Running"
+                );
+
+            }
+        );
 
     })
-    .catch((error) => {
+    .catch(function (error) {
 
         console.error(
             "Database Sync Error:",
