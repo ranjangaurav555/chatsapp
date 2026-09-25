@@ -184,6 +184,31 @@ socketIO.on(
 
 
 // ==========================================
+// RECEIVE GROUP MESSAGE
+// ==========================================
+
+socketIO.on(
+    "group_message",
+    function (message) {
+
+        console.log(
+            "Group message received:",
+            message
+        );
+
+
+        displayGroupMessage(
+            message
+        );
+
+
+        scrollToBottom();
+
+    }
+);
+
+
+// ==========================================
 // ELEMENTS
 // ==========================================
 
@@ -374,6 +399,8 @@ async function openChat(user) {
 
     selectedUser = user;
 
+    selectedGroup = null;
+
     // ==========================================
     // VERIFY USER EMAIL FROM DATABASE
     // ==========================================
@@ -540,7 +567,6 @@ async function loadMessages() {
 
 }
 
-
 // ==========================================
 // DISPLAY MESSAGE
 // ==========================================
@@ -585,7 +611,6 @@ function displayMessage(
     // ==========================================
 
     const isCurrentChat =
-
         (
             messageSenderId ===
             currentUserId
@@ -753,7 +778,171 @@ function displayMessage(
     );
 
 }
+// ==========================================
+// DISPLAY GROUP MESSAGE
+// ==========================================
 
+function displayGroupMessage(
+    message
+) {
+
+    // Group chat selected nahi hai
+    if (!selectedGroup) {
+
+        return;
+
+    }
+
+
+    // Check current group
+    if (
+        Number(message.groupId) !==
+        Number(selectedGroup.id)
+    ) {
+
+        return;
+
+    }
+
+
+    // ==========================================
+    // CREATE ELEMENTS
+    // ==========================================
+
+    const messageWrapper =
+        document.createElement(
+            "div"
+        );
+
+    const bubble =
+        document.createElement(
+            "div"
+        );
+
+    const text =
+        document.createElement(
+            "span"
+        );
+
+    const time =
+        document.createElement(
+            "span"
+        );
+
+
+    // ==========================================
+    // CHECK MY MESSAGE
+    // ==========================================
+
+    const isMyMessage =
+        Number(message.senderId) ===
+        Number(currentUser.id);
+
+     
+        console.log(
+    "GROUP DEBUG => senderId:",
+    Number(message.senderId),
+    "currentUserId:",
+    Number(currentUser.id),
+    "isMyMessage:",
+    isMyMessage
+);
+    // ==========================================
+    // WRAPPER
+    // ==========================================
+
+    messageWrapper.className =
+        "message-wrapper";
+
+
+    if (isMyMessage) {
+
+        messageWrapper.classList.add(
+            "sent"
+        );
+
+    } else {
+
+        messageWrapper.classList.add(
+            "received"
+        );
+
+    }
+
+
+    // ==========================================
+    // BUBBLE
+    // ==========================================
+
+    bubble.className =
+        "message-bubble";
+
+
+    // ==========================================
+    // MESSAGE TEXT
+    // ==========================================
+
+    text.className =
+        "message-text";
+
+    text.textContent =
+        message.message;
+
+
+    // ==========================================
+    // TIME
+    // ==========================================
+
+    time.className =
+        "message-time";
+
+
+    const messageDate =
+        new Date(
+            message.createdAt
+        );
+
+
+    time.textContent =
+        messageDate.toLocaleTimeString(
+            [],
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+
+    // Double tick for my message
+    if (isMyMessage) {
+
+        time.textContent +=
+            " ✓✓";
+
+    }
+
+
+    // ==========================================
+    // APPEND
+    // ==========================================
+
+    bubble.appendChild(
+        text
+    );
+
+    bubble.appendChild(
+        time
+    );
+
+    messageWrapper.appendChild(
+        bubble
+    );
+
+    chatMessages.appendChild(
+        messageWrapper
+    );
+
+}
 
 // ==========================================
 // SEND MESSAGE USING SOCKET.IO
@@ -774,7 +963,39 @@ function sendMessage() {
     }
 
 
-    // User not selected
+    // ==========================================
+    // GROUP CHAT
+    // ==========================================
+
+    if (selectedGroup) {
+
+        socketIO.emit(
+            "group_message",
+            {
+                groupId:
+                    selectedGroup.id,
+
+                message:
+                    message
+            }
+        );
+
+        console.log(
+            "Group message sent:",
+            message
+        );
+
+        messageInput.value = "";
+
+        messageInput.focus();
+
+        return;
+    }
+
+
+    // ==========================================
+    // PERSONAL CHAT
+    // ==========================================
 
     if (!selectedUser) {
 
@@ -787,8 +1008,6 @@ function sendMessage() {
     }
 
 
-    // Room not joined
-
     if (!currentRoomId) {
 
         alert(
@@ -799,10 +1018,6 @@ function sendMessage() {
 
     }
 
-
-    // ==========================================
-    // SEND USING SOCKET.IO
-    // ==========================================
 
     socketIO.emit(
         "new_message",
@@ -834,14 +1049,11 @@ function sendMessage() {
     // CLEAR INPUT
     // ==========================================
 
-    messageInput.value =
-        "";
-
+    messageInput.value = "";
 
     messageInput.focus();
 
 }
-
 
 // ==========================================
 // SEND BUTTON
@@ -943,59 +1155,599 @@ function scrollToBottom() {
 
 
 // ==========================================
-// CREATE GROUP MODAL
+// GROUP CHAT
 // ==========================================
 
 const createGroupBtn =
-    document.getElementById(
-        "createGroupBtn"
-    );
+    document.getElementById("createGroupBtn");
 
 const groupModal =
-    document.getElementById(
-        "groupModal"
-    );
+    document.getElementById("groupModal");
 
 const closeModal =
-    document.getElementById(
-        "closeModal"
-    );
+    document.getElementById("closeModal");
+
+const groupName =
+    document.getElementById("groupName");
+
+const groupUsersList =
+    document.getElementById("groupUsersList");
+
+const saveGroupBtn =
+    document.getElementById("saveGroupBtn");
+
+const groupsList =
+    document.getElementById("groupsList");
+
+    // ==========================================
+// SELECTED GROUP
+// ==========================================
+
+let selectedGroup = null;
 
 
-if (
-    createGroupBtn &&
-    groupModal &&
-    closeModal
-) {
+// ==========================================
+// OPEN CREATE GROUP MODAL
+// ==========================================
 
-    createGroupBtn.addEventListener(
-        "click",
-        function () {
+createGroupBtn.addEventListener(
+    "click",
+    function () {
 
-            groupModal.classList.add(
-                "show"
+        groupName.value = "";
+
+        loadUsersForGroup();
+
+        groupModal.classList.add(
+            "show"
+        );
+    }
+);
+
+
+// ==========================================
+// CLOSE GROUP MODAL
+// ==========================================
+
+closeModal.addEventListener(
+    "click",
+    function () {
+
+        groupModal.classList.remove(
+            "show"
+        );
+    }
+);
+
+
+// ==========================================
+// LOAD USERS FOR GROUP
+// ==========================================
+
+async function loadUsersForGroup() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/users/all"
             );
 
+        const data =
+            await response.json();
+
+            const users =
+    data.users || [];
+
+
+        groupUsersList.innerHTML =
+            "";
+
+
+        users.forEach(
+            function (user) {
+
+                // Don't show current user
+                if (
+                    Number(user.id) ===
+                    Number(currentUser.id)
+                ) {
+                    return;
+                }
+
+
+                const userItem =
+                    document.createElement(
+                        "label"
+                    );
+
+                userItem.className =
+                    "group-user-item";
+
+
+                userItem.innerHTML = `
+
+                    <input
+                        type="checkbox"
+                        value="${user.id}"
+                    >
+
+                    <span>
+                        ${user.name}
+                    </span>
+
+                `;
+
+
+                groupUsersList.appendChild(
+                    userItem
+                );
+
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Load Group Users Error:",
+            error
+        );
+
+    }
+}
+
+
+// ==========================================
+// CREATE GROUP
+// ==========================================
+
+saveGroupBtn.addEventListener(
+    "click",
+    async function () {
+
+        const name =
+            groupName.value.trim();
+
+
+        if (!name) {
+
+            alert(
+                "Please enter group name"
+            );
+
+            return;
         }
-    );
 
 
-    closeModal.addEventListener(
-        "click",
-        function () {
+        // Get selected users
+        const checkedUsers =
+            groupUsersList.querySelectorAll(
+                'input[type="checkbox"]:checked'
+            );
 
+
+        if (
+            checkedUsers.length === 0
+        ) {
+
+            alert(
+                "Please select at least one user"
+            );
+
+            return;
+        }
+
+
+        const userIds =
+            Array.from(
+                checkedUsers
+            ).map(
+                function (checkbox) {
+                    return Number(
+                        checkbox.value
+                    );
+                }
+            );
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/groups",
+                    {
+
+                        method:
+                            "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json",
+
+                            "Authorization":
+                                `Bearer ${token}`
+
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                name:
+                                    name,
+
+                                userIds:
+                                    userIds
+
+                            })
+
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                alert(
+                    data.message ||
+                    "Failed to create group"
+                );
+
+                return;
+            }
+
+
+            console.log(
+                "Group created:",
+                data.group
+            );
+
+
+            // Close modal
             groupModal.classList.remove(
                 "show"
             );
 
+
+            // Clear form
+            groupName.value = "";
+
+
+            // Reload groups
+            loadGroups();
+
+
+            alert(
+                "Group created successfully"
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Create Group Error:",
+                error
+            );
+
+            alert(
+                "Server error"
+            );
+
         }
-    );
+
+    }
+);
+
+
+// ==========================================
+// LOAD USER GROUPS
+// ==========================================
+
+async function loadGroups() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/groups",
+                {
+
+                    method:
+                        "GET",
+
+                    headers: {
+
+                        "Authorization":
+                            `Bearer ${token}`
+
+                    }
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            console.error(
+                data.message
+            );
+
+            return;
+        }
+
+
+        groupsList.innerHTML =
+            "";
+
+
+        data.groups.forEach(
+            function (group) {
+
+                const groupItem =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                groupItem.className =
+                    "user-item";
+
+
+                groupItem.innerHTML = `
+
+                    <div class="avatar">
+                        ${group.name
+                            .charAt(0)
+                            .toUpperCase()}
+                    </div>
+
+                    <div>
+                        ${group.name}
+                    </div>
+
+                `;
+
+
+                groupItem.addEventListener(
+                    "click",
+                    function () {
+
+                        openGroupChat(
+                            group
+                        );
+
+                    }
+                );
+
+
+                groupsList.appendChild(
+                    groupItem
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Load Groups Error:",
+            error
+        );
+
+    }
+}
+
+
+
+// ==========================================
+// LOAD GROUP MESSAGES
+// ==========================================
+
+async function loadGroupMessages(groupId) {
+
+    try {
+
+        console.log(
+            "Loading group messages:",
+            groupId
+        );
+
+
+        const response =
+            await fetch(
+                `/api/groups/${groupId}/messages`,
+                {
+                    method:
+                        "GET",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Group messages response:",
+            data
+        );
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Load Group Messages Error:",
+                data.message
+            );
+
+            return;
+        }
+
+
+        // ==========================================
+        // CLEAR CHAT
+        // ==========================================
+
+        chatMessages.innerHTML =
+            "";
+
+
+        // ==========================================
+        // NO MESSAGES
+        // ==========================================
+
+        if (
+            !data.messages ||
+            data.messages.length === 0
+        ) {
+
+            chatMessages.innerHTML = `
+
+                <div class="select-chat">
+
+                    <h2>
+                        ${selectedGroup.name}
+                    </h2>
+
+                    <p>
+                        No messages yet
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+        }
+
+
+        // ==========================================
+        // DISPLAY OLD MESSAGES
+        // ==========================================
+
+        data.messages.forEach(
+            function (message) {
+
+                displayGroupMessage(
+                    message
+                );
+
+            }
+        );
+
+
+        // ==========================================
+        // SCROLL TO BOTTOM
+        // ==========================================
+
+        scrollToBottom();
+
+
+    } catch (error) {
+
+        console.error(
+            "Load Group Messages Error:",
+            error
+        );
+
+    }
 
 }
 
+// ==========================================
+// OPEN GROUP CHAT
+// ==========================================
+
+function openGroupChat(group) {
+
+    console.log(
+        "Opening group:",
+        group
+    );
+
+
+    // ==========================================
+    // SET GROUP
+    // ==========================================
+
+    selectedGroup =
+        group;
+
+    selectedUser =
+        null;
+
+
+    // ==========================================
+    // UPDATE HEADER
+    // ==========================================
+
+    chatName.textContent =
+        group.name;
+
+
+    chatAvatar.textContent =
+        group.name
+            .charAt(0)
+            .toUpperCase();
+
+
+    chatStatus.textContent =
+        "Group";
+
+
+    // ==========================================
+    // JOIN SOCKET.IO GROUP
+    // ==========================================
+
+    socketIO.emit(
+        "join_group",
+        group.id
+    );
+
+
+    // ==========================================
+    // SET CURRENT ROOM
+    // ==========================================
+
+    currentRoomId =
+        group.roomId;
+
+
+    // ==========================================
+    // LOAD OLD GROUP MESSAGES
+    // ==========================================
+
+    loadGroupMessages(
+        group.id
+    );
+
+
+    console.log(
+        "Joined group room:",
+        group.roomId
+    );
+
+
+    messageInput.focus();
+
+}
 
 // ==========================================
 // START APPLICATION
 // ==========================================
 
 loadUsers();
+loadGroups();

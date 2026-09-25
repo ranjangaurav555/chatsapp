@@ -58,6 +58,9 @@ app.get("/", function (req, res) {
 // ==========================================
 
 require("./models/Message");
+require("./models/Group");
+require("./models/GroupMember");
+require("./models/GroupMessage");
 
 
 // ==========================================
@@ -70,6 +73,8 @@ const userRoutes =
 const messageRoutes =
     require("./routes/messageRoutes");
 
+    const groupRoutes = require("./routes/groupRoutes");
+
 
 app.use(
     "/api/users",
@@ -80,6 +85,8 @@ app.use(
     "/api/messages",
     messageRoutes
 );
+
+app.use("/api/groups", groupRoutes);
 
 
 // ==========================================
