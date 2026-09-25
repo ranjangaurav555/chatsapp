@@ -6,6 +6,9 @@ const socketAuthentication =
 const chatHandler =
     require("./handlers/chat");
 
+    const personalChatHandler =
+    require("./handlers/personalChat");
+
 // ==========================================
 // SETUP SOCKET.IO
 // ==========================================
@@ -35,22 +38,29 @@ const setupSocketIO = function (server) {
     // SOCKET.IO CONNECTION
     // ==========================================
 
-    io.on(
-        "connection",
-        function (socket) {
+io.on(
+    "connection",
+    function (socket) {
 
-            console.log(
-                "Socket.IO client connected:",
-                socket.id
-            );
+        console.log(
+            "Socket.IO client connected:",
+            socket.id
+        );
 
-            chatHandler(
-                io,
-                socket
-            );
+        // General chat handler
+        chatHandler(
+            io,
+            socket
+        );
 
-        }
-    );
+        // Personal chat handler
+        personalChatHandler(
+            io,
+            socket
+        );
+
+    }
+);
 
     // Return Socket.IO instance
     return io;
