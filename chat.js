@@ -22,30 +22,23 @@ const currentUser =
 // SOCKET.IO CONNECTION
 // ==========================================
 
-const socketIO =
-    io("http://localhost:3000");
+const token = localStorage.getItem("token");
 
+const socketIO = io("http://localhost:3000", {
 
-socketIO.on(
+    auth: {
+        token: token
+    }
+
+});
+
+ socketIO.on(
     "connect",
     function () {
 
         console.log(
             "Socket.IO connected:",
             socketIO.id
-        );
-
-
-        // Register current user with Socket.IO server
-        socketIO.emit(
-            "register",
-            currentUser.id
-        );
-
-
-        console.log(
-            "Socket.IO user registered:",
-            currentUser.id
         );
 
     }

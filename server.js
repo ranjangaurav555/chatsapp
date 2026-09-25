@@ -6,6 +6,7 @@ const http = require("http");
 const sequelize = require("./db");
 
 const { Server } = require("socket.io");
+const jwt = require("jsonwebtoken");
 
 
 const app = express();
@@ -97,101 +98,156 @@ const server =
         }
     });
     
-    app.set(
-    "io",
-    io
-);
+    app.set( "io", io);
+
     // ==========================================
+// SOCKET.IO AUTHENTICATION
+// ==========================================
+
+io.use(function (socket, next) {
+
+    try {
+
+        const token =
+            socket.handshake.auth.token;
+
+
+        if (!token) {
+
+            return next(
+                new Error("Authentication token missing")
+            );
+
+        }
+
+
+        const decoded =
+            jwt.verify(
+                token,
+              "MY_SECRET_KEY"
+            );
+
+
+        socket.userId =
+            String(decoded.id);
+
+
+        console.log(
+            "Socket authenticated user:",
+            socket.userId
+        );
+
+
+        next();
+
+
+    } catch (error) {
+
+        console.error(
+            "Socket authentication failed:",
+            error.message
+        );
+
+
+        next(
+            new Error("Authentication failed")
+        );
+
+    }
+
+});
+
+// ==========================================
 // SOCKET.IO
 // ==========================================
 
 const socketUsers = new Map();
 
 
-io.on("connection", function (socket) {
+io.on(
+    "connection",
+    function (socket) {
 
-    console.log(
-        "Socket.IO client connected:",
-        socket.id
-    );
+        console.log(
+            "Socket.IO client connected:",
+            socket.id
+        );
 
 
-    // ==========================================
-    // REGISTER USER
-    // ==========================================
+        // ==========================================
+        // AUTHENTICATED USER
+        // ==========================================
 
-    socket.on(
-        "register",
-        function (userId) {
+        const userId =
+            socket.userId;
 
-                   console.log(
-            "REGISTER EVENT RECEIVED:",
+
+        // ==========================================
+        // JOIN USER-SPECIFIC ROOM
+        // ==========================================
+
+        socket.join(
+            `user_${userId}`
+        );
+
+
+        // Store authenticated user
+        socketUsers.set(
+            userId,
+            socket.id
+        );
+
+
+        console.log(
+            "Socket.IO authenticated user connected:",
             userId
         );
 
-            const userIdString =
-                String(userId);
 
-                  // Join user-specific Socket.IO room
-        socket.join(`user_${userIdString}`);
-
-
-            socketUsers.set(
-                userIdString,
-                socket.id
-            );
+        console.log(
+            "User joined room:",
+            `user_${userId}`
+        );
 
 
-            socket.userId =
-                userIdString;
+        console.log(
+            "Connected Socket.IO users:",
+            Array.from(
+                socketUsers.keys()
+            )
+        );
 
 
-            console.log(
-                "Socket.IO user registered:",
-                userIdString
-            );
+        // ==========================================
+        // DISCONNECT
+        // ==========================================
 
+        socket.on(
+            "disconnect",
+            function () {
 
-            console.log(
-                "Connected Socket.IO users:",
-                Array.from(
-                    socketUsers.keys()
-                )
-            );
+                if (
+                    socketUsers.get(userId) === socket.id
+                ) {
 
-        }
-    );
+                    socketUsers.delete(
+                        userId
+                    );
 
-
-    // ==========================================
-    // DISCONNECT
-    // ==========================================
-
-    socket.on(
-        "disconnect",
-        function () {
-
-            if (
-                socket.userId &&
-                socketUsers.get(socket.userId) === socket.id
-            ) {
-
-                socketUsers.delete(
-                    socket.userId
-                );
+                }
 
 
                 console.log(
                     "Socket.IO user disconnected:",
-                    socket.userId
+                    userId
                 );
 
             }
+        );
 
-        }
-    );
+    }
+);
 
-});
 // ==========================================
 // DATABASE + SERVER
 // ==========================================
