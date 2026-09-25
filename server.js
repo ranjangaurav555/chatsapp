@@ -5,9 +5,8 @@ const http = require("http");
 
 const sequelize = require("./db");
 
-const { Server } = require("socket.io");
-const jwt = require("jsonwebtoken");
-
+const setupSocketIO =
+    require("./socket-io");
 
 const app = express();
 
@@ -90,163 +89,19 @@ app.use(
 const server =
     http.createServer(app);
 
-// socket.io
-    const io =
-    new Server(server, {
-        cors: {
-            origin: "*"
-        }
-    });
-    
-    app.set( "io", io);
-
-    // ==========================================
-// SOCKET.IO AUTHENTICATION
-// ==========================================
-
-io.use(function (socket, next) {
-
-    try {
-
-        const token =
-            socket.handshake.auth.token;
-
-
-        if (!token) {
-
-            return next(
-                new Error("Authentication token missing")
-            );
-
-        }
-
-
-        const decoded =
-            jwt.verify(
-                token,
-              "MY_SECRET_KEY"
-            );
-
-
-        socket.userId =
-            String(decoded.id);
-
-
-        console.log(
-            "Socket authenticated user:",
-            socket.userId
-        );
-
-
-        next();
-
-
-    } catch (error) {
-
-        console.error(
-            "Socket authentication failed:",
-            error.message
-        );
-
-
-        next(
-            new Error("Authentication failed")
-        );
-
-    }
-
-});
 
 // ==========================================
-// SOCKET.IO
+// SETUP SOCKET.IO
 // ==========================================
 
-const socketUsers = new Map();
+const io =
+    setupSocketIO(server);
 
-
-io.on(
-    "connection",
-    function (socket) {
-
-        console.log(
-            "Socket.IO client connected:",
-            socket.id
-        );
-
-
-        // ==========================================
-        // AUTHENTICATED USER
-        // ==========================================
-
-        const userId =
-            socket.userId;
-
-
-        // ==========================================
-        // JOIN USER-SPECIFIC ROOM
-        // ==========================================
-
-        socket.join(
-            `user_${userId}`
-        );
-
-
-        // Store authenticated user
-        socketUsers.set(
-            userId,
-            socket.id
-        );
-
-
-        console.log(
-            "Socket.IO authenticated user connected:",
-            userId
-        );
-
-
-        console.log(
-            "User joined room:",
-            `user_${userId}`
-        );
-
-
-        console.log(
-            "Connected Socket.IO users:",
-            Array.from(
-                socketUsers.keys()
-            )
-        );
-
-
-        // ==========================================
-        // DISCONNECT
-        // ==========================================
-
-        socket.on(
-            "disconnect",
-            function () {
-
-                if (
-                    socketUsers.get(userId) === socket.id
-                ) {
-
-                    socketUsers.delete(
-                        userId
-                    );
-
-                }
-
-
-                console.log(
-                    "Socket.IO user disconnected:",
-                    userId
-                );
-
-            }
-        );
-
-    }
+app.set(
+    "io",
+    io
 );
+
 
 // ==========================================
 // DATABASE + SERVER
@@ -258,7 +113,6 @@ sequelize.sync()
         console.log(
             "Database Tables Created Successfully"
         );
-
 
         server.listen(
             3000,
