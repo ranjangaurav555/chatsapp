@@ -77,26 +77,60 @@ let currentRoomId = null;
 
 
 // ==========================================
-// CREATE UNIQUE ROOM ID
+// CREATE UNIQUE ROOM ID USING EMAIL
 // ==========================================
 
 function createRoomId(
-    user1,
-    user2
+    email1,
+    email2
 ) {
 
-    const ids = [
-        Number(user1),
-        Number(user2)
-    ].sort(
-        function (a, b) {
-            return a - b;
-        }
-    );
+    const emails = [
+        email1.toLowerCase().trim(),
+        email2.toLowerCase().trim()
+    ].sort();
 
-    return `personal_${ids[0]}_${ids[1]}`;
+    return `personal_${emails[0]}_${emails[1]}`;
 }
 
+// ==========================================
+// CHECK USER BY EMAIL
+// ==========================================
+
+async function checkUserByEmail(email) {
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/users/check-email?email=${encodeURIComponent(email)}`
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            console.error(
+                "User verification failed:",
+                data.message
+            );
+
+            return null;
+        }
+
+        return data.user;
+
+    } catch (error) {
+
+        console.error(
+            "Check User Email Error:",
+            error
+        );
+
+        return null;
+    }
+}
 
 // ==========================================
 // JOIN PERSONAL CHAT ROOM
@@ -336,31 +370,43 @@ async function loadUsers() {
 
 }
 
+async function openChat(user) {
 
-// ==========================================
-// OPEN CHAT
-// ==========================================
+    selectedUser = user;
 
-async function openChat(
-    user
-) {
+    // ==========================================
+    // VERIFY USER EMAIL FROM DATABASE
+    // ==========================================
 
-    // Select user
+    const verifiedUser =
+        await checkUserByEmail(
+            selectedUser.email
+        );
 
-    selectedUser =
-        user;
+    if (!verifiedUser) {
+
+        alert(
+            "User with this email does not exist"
+        );
+
+        selectedUser = null;
+
+        return;
+    }
+
+    // Use verified user from database
+    selectedUser = verifiedUser;
 
 
     // ==========================================
-    // CREATE ROOM ID
+    // CREATE PERSONAL ROOM ID
     // ==========================================
 
     const roomId =
         createRoomId(
-            currentUser.id,
-            selectedUser.id
+            currentUser.email,
+            selectedUser.email
         );
-
 
     console.log(
         "Personal room ID:",
@@ -369,7 +415,7 @@ async function openChat(
 
 
     // ==========================================
-    // JOIN ROOM
+    // JOIN PERSONAL ROOM
     // ==========================================
 
     joinPersonalChat(
@@ -378,18 +424,16 @@ async function openChat(
 
 
     // ==========================================
-    // HEADER
+    // UPDATE CHAT HEADER
     // ==========================================
 
     chatName.textContent =
-        user.name;
-
+        selectedUser.name;
 
     chatAvatar.textContent =
-        user.name
+        selectedUser.name
             .charAt(0)
             .toUpperCase();
-
 
     chatStatus.textContent =
         "offline";
@@ -401,15 +445,8 @@ async function openChat(
 
     await loadMessages();
 
-
-    // ==========================================
-    // FOCUS INPUT
-    // ==========================================
-
     messageInput.focus();
-
 }
-
 
 // ==========================================
 // LOAD OLD MESSAGES
