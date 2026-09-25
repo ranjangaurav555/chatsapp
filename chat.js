@@ -13,87 +13,33 @@ if (!userData) {
 
 }
 
-
 const currentUser =
     JSON.parse(userData);
 
 
-    // ==========================================
+// ==========================================
 // SOCKET.IO CONNECTION
 // ==========================================
 
-const token = localStorage.getItem("token");
+const token =
+    localStorage.getItem("token");
 
-const socketIO = io("http://localhost:3000", {
-
-    auth: {
-        token: token
-    }
-
-});
-
-// ==========================================
-// PERSONAL CHAT
-// ==========================================
-
-// Join personal chat room
-function joinPersonalChat(roomId) {
-
-    socketIO.emit(
-        "join_room",
-        roomId
-    );
-
-    console.log(
-        "Joined personal chat room:",
-        roomId
-    );
-
-}
-
-
-// ==========================================
-// SEND PERSONAL MESSAGE
-// ==========================================
-
-function sendPersonalMessage(
-    roomId,
-    message
-) {
-
-    socketIO.emit(
-        "new_message",
+const socketIO =
+    io(
+        "http://localhost:3000",
         {
-            roomId: roomId,
-            message: message
+            auth: {
+                token: token
+            }
         }
     );
 
-    console.log(
-        "Personal message sent:",
-        message
-    );
-
-}
-
 
 // ==========================================
-// RECEIVE PERSONAL MESSAGE
+// SOCKET.IO CONNECT
 // ==========================================
 
 socketIO.on(
-    "new_message",
-    function (data) {
-
-        console.log(
-            "Personal message received:",
-            data
-        );
-
-    }
-);
-
- socketIO.on(
     "connect",
     function () {
 
@@ -105,8 +51,79 @@ socketIO.on(
     }
 );
 
+
 // ==========================================
-// RECEIVE NEW MESSAGE USING SOCKET.IO
+// SOCKET.IO CONNECTION ERROR
+// ==========================================
+
+socketIO.on(
+    "connect_error",
+    function (error) {
+
+        console.error(
+            "Socket.IO connection error:",
+            error.message
+        );
+
+    }
+);
+
+
+// ==========================================
+// PERSONAL CHAT
+// ==========================================
+
+let currentRoomId = null;
+
+
+// ==========================================
+// CREATE UNIQUE ROOM ID
+// ==========================================
+
+function createRoomId(
+    user1,
+    user2
+) {
+
+    const ids = [
+        Number(user1),
+        Number(user2)
+    ].sort(
+        function (a, b) {
+            return a - b;
+        }
+    );
+
+    return `personal_${ids[0]}_${ids[1]}`;
+}
+
+
+// ==========================================
+// JOIN PERSONAL CHAT ROOM
+// ==========================================
+
+function joinPersonalChat(
+    roomId
+) {
+
+    socketIO.emit(
+        "join_room",
+        roomId
+    );
+
+    currentRoomId =
+        roomId;
+
+    console.log(
+        "Joined personal chat room:",
+        roomId
+    );
+
+}
+
+
+// ==========================================
+// RECEIVE PERSONAL MESSAGE
 // ==========================================
 
 socketIO.on(
@@ -119,350 +136,72 @@ socketIO.on(
         );
 
 
-        // Display message in chat
-        displayMessage(message);
+        // Display message
+        displayMessage(
+            message
+        );
 
 
-        // Scroll chat to bottom
+        // Scroll chat
         scrollToBottom();
 
     }
 );
 
 
-
-    // ==========================================
-// WEBSOCKET
-// ==========================================
-
-let socket = null;
-
-
-function connectWebSocket() {
-
-    const protocol =
-        window.location.protocol === "https:"
-            ? "wss://"
-            : "ws://";
-
-
-    socket =
-        new WebSocket(
-            protocol +
-            window.location.host
-        );
-
-
-    // ==========================================
-    // CONNECTION OPEN
-    // ==========================================
-
-    socket.addEventListener(
-        "open",
-        function () {
-
-            console.log(
-                "WebSocket connected"
-            );
-
-
-            // Register current user
-            socket.send(
-                JSON.stringify({
-
-                    type: "register",
-
-                    userId:
-                        currentUser.id
-
-                })
-            );
-
-        }
-    );
-
-
-   // ==========================================
-// RECEIVE LIVE MESSAGE
-// ==========================================
-
-socket.addEventListener(
-    "message",
-    function (event) {
-
-        console.log(
-            "================================="
-        );
-
-        console.log(
-            "WEBSOCKET MESSAGE RECEIVED"
-        );
-
-        console.log(
-            "Raw data:",
-            event.data
-        );
-
-
-        try {
-
-            const data =
-                JSON.parse(
-                    event.data
-                );
-
-
-            console.log(
-                "Parsed data:",
-                data
-            );
-
-
-            // ==========================================
-            // CHECK MESSAGE TYPE
-            // ==========================================
-
-            if (
-                data.type !==
-                "new_message"
-            ) {
-
-                console.log(
-                    "Unknown WebSocket message type:",
-                    data.type
-                );
-
-                return;
-
-            }
-
-
-            const message =
-                data.message;
-
-
-            console.log(
-                "Live message object:",
-                message
-            );
-
-
-            // ==========================================
-            // CURRENT USER
-            // ==========================================
-
-            console.log(
-                "Current user ID:",
-                currentUser.id
-            );
-
-
-            // ==========================================
-            // SELECTED USER
-            // ==========================================
-
-            console.log(
-                "Selected user:",
-                selectedUser
-            );
-
-
-            if (!selectedUser) {
-
-                console.log(
-                    "No chat is currently selected"
-                );
-
-                return;
-
-            }
-
-
-            // ==========================================
-            // CONVERT IDs TO NUMBER
-            // ==========================================
-
-            const senderId =
-                Number(
-                    message.senderId
-                );
-
-            const receiverId =
-                Number(
-                    message.receiverId
-                );
-
-            const currentUserId =
-                Number(
-                    currentUser.id
-                );
-
-            const selectedUserId =
-                Number(
-                    selectedUser.id
-                );
-
-
-            console.log(
-                "senderId:",
-                senderId
-            );
-
-            console.log(
-                "receiverId:",
-                receiverId
-            );
-
-            console.log(
-                "currentUserId:",
-                currentUserId
-            );
-
-            console.log(
-                "selectedUserId:",
-                selectedUserId
-            );
-
-
-            // ==========================================
-            // CHECK CURRENT CHAT
-            // ==========================================
-
-            const isCurrentChat =
-
-                senderId ===
-                    selectedUserId
-
-                &&
-
-                receiverId ===
-                    currentUserId;
-
-
-            console.log(
-                "Is current chat:",
-                isCurrentChat
-            );
-
-
-            if (!isCurrentChat) {
-
-                console.log(
-                    "Message is not for currently selected chat"
-                );
-
-                return;
-
-            }
-
-
-            // ==========================================
-            // DISPLAY MESSAGE
-            // ==========================================
-
-            displayMessage(
-                message
-            );
-
-
-            scrollToBottom();
-
-
-            console.log(
-                "LIVE MESSAGE DISPLAYED SUCCESSFULLY"
-            );
-
-
-            console.log(
-                "================================="
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "WebSocket Receive Error:",
-                error
-            );
-
-        }
-
-    }
-);
-    // ==========================================
-    // CONNECTION CLOSED
-    // ==========================================
-
-    socket.addEventListener(
-        "close",
-        function () {
-
-            console.log(
-                "WebSocket disconnected"
-            );
-
-
-            // Try to reconnect
-            setTimeout(
-                connectWebSocket,
-                2000
-            );
-
-        }
-    );
-
-
-    // ==========================================
-    // CONNECTION ERROR
-    // ==========================================
-
-    socket.addEventListener(
-        "error",
-        function (error) {
-
-            console.error(
-                "WebSocket Error:",
-                error
-            );
-
-        }
-    );
-
-}
-
 // ==========================================
 // ELEMENTS
 // ==========================================
 
 const myName =
-    document.getElementById("myName");
+    document.getElementById(
+        "myName"
+    );
 
 const myAvatar =
-    document.getElementById("myAvatar");
+    document.getElementById(
+        "myAvatar"
+    );
 
 const usersList =
-    document.getElementById("usersList");
+    document.getElementById(
+        "usersList"
+    );
 
 const searchInput =
-    document.getElementById("searchInput");
+    document.getElementById(
+        "searchInput"
+    );
 
 const chatName =
-    document.getElementById("chatName");
+    document.getElementById(
+        "chatName"
+    );
 
 const chatAvatar =
-    document.getElementById("chatAvatar");
+    document.getElementById(
+        "chatAvatar"
+    );
 
 const chatStatus =
-    document.getElementById("chatStatus");
+    document.getElementById(
+        "chatStatus"
+    );
 
 const chatMessages =
-    document.getElementById("chatMessages");
+    document.getElementById(
+        "chatMessages"
+    );
 
 const messageInput =
-    document.getElementById("messageInput");
+    document.getElementById(
+        "messageInput"
+    );
 
 const sendBtn =
-    document.getElementById("sendBtn");
+    document.getElementById(
+        "sendBtn"
+    );
 
 
 // ==========================================
@@ -484,11 +223,6 @@ myAvatar.textContent =
 
 let selectedUser = null;
 
-// ==========================================
-// START WEBSOCKET
-// ==========================================
-
-//connectWebSocket();
 
 // ==========================================
 // LOAD USERS
@@ -499,88 +233,96 @@ async function loadUsers() {
     try {
 
         const response =
-            await fetch("/api/users/all");
+            await fetch(
+                "/api/users/all"
+            );
 
 
         const data =
             await response.json();
 
 
-        usersList.innerHTML = "";
+        usersList.innerHTML =
+            "";
 
 
-        data.users.forEach(function (user) {
+        data.users.forEach(
+            function (user) {
 
+                // Don't show logged-in user
 
-            // Don't show logged-in user
+                if (
+                    Number(user.id) ===
+                    Number(currentUser.id)
+                ) {
 
-            if (
-                Number(user.id) ===
-                Number(currentUser.id)
-            ) {
-
-                return;
-
-            }
-
-
-            const userItem =
-                document.createElement("div");
-
-
-            userItem.className =
-                "user-item";
-
-
-            userItem.dataset.name =
-                user.name;
-
-            userItem.dataset.email =
-                user.email;
-
-
-            userItem.innerHTML = `
-
-                <div class="avatar">
-
-                    ${user.name
-                        .charAt(0)
-                        .toUpperCase()}
-
-                </div>
-
-                <div class="user-info">
-
-                    <h4>
-                        ${user.name}
-                    </h4>
-
-                    <p>
-                        ${user.email}
-                    </p>
-
-                </div>
-
-            `;
-
-
-            // Click user
-
-            userItem.addEventListener(
-                "click",
-                function () {
-
-                    openChat(user);
+                    return;
 
                 }
-            );
 
 
-            usersList.appendChild(
-                userItem
-            );
+                const userItem =
+                    document.createElement(
+                        "div"
+                    );
 
-        });
+
+                userItem.className =
+                    "user-item";
+
+
+                userItem.dataset.name =
+                    user.name;
+
+                userItem.dataset.email =
+                    user.email;
+
+
+                userItem.innerHTML = `
+
+                    <div class="avatar">
+
+                        ${user.name
+                            .charAt(0)
+                            .toUpperCase()}
+
+                    </div>
+
+                    <div class="user-info">
+
+                        <h4>
+                            ${user.name}
+                        </h4>
+
+                        <p>
+                            ${user.email}
+                        </p>
+
+                    </div>
+
+                `;
+
+
+                // Open chat
+
+                userItem.addEventListener(
+                    "click",
+                    function () {
+
+                        openChat(
+                            user
+                        );
+
+                    }
+                );
+
+
+                usersList.appendChild(
+                    userItem
+                );
+
+            }
+        );
 
 
     } catch (error) {
@@ -599,13 +341,45 @@ async function loadUsers() {
 // OPEN CHAT
 // ==========================================
 
-async function openChat(user) {
+async function openChat(
+    user
+) {
+
+    // Select user
 
     selectedUser =
         user;
 
 
-    // Header
+    // ==========================================
+    // CREATE ROOM ID
+    // ==========================================
+
+    const roomId =
+        createRoomId(
+            currentUser.id,
+            selectedUser.id
+        );
+
+
+    console.log(
+        "Personal room ID:",
+        roomId
+    );
+
+
+    // ==========================================
+    // JOIN ROOM
+    // ==========================================
+
+    joinPersonalChat(
+        roomId
+    );
+
+
+    // ==========================================
+    // HEADER
+    // ==========================================
 
     chatName.textContent =
         user.name;
@@ -621,12 +395,16 @@ async function openChat(user) {
         "offline";
 
 
-    // Load messages
+    // ==========================================
+    // LOAD OLD MESSAGES
+    // ==========================================
 
     await loadMessages();
 
 
-// Focus input
+    // ==========================================
+    // FOCUS INPUT
+    // ==========================================
 
     messageInput.focus();
 
@@ -634,13 +412,15 @@ async function openChat(user) {
 
 
 // ==========================================
-// LOAD MESSAGES
+// LOAD OLD MESSAGES
 // ==========================================
 
 async function loadMessages() {
 
     if (!selectedUser) {
+
         return;
+
     }
 
 
@@ -656,7 +436,8 @@ async function loadMessages() {
             await response.json();
 
 
-        chatMessages.innerHTML = "";
+        chatMessages.innerHTML =
+            "";
 
 
         if (
@@ -665,7 +446,9 @@ async function loadMessages() {
         ) {
 
             const emptyMessage =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
 
             emptyMessage.className =
@@ -724,29 +507,119 @@ async function loadMessages() {
 // ==========================================
 // DISPLAY MESSAGE
 // ==========================================
-function displayMessage(message) {
+
+function displayMessage(
+    message
+) {
+
+    // Don't display message if
+    // no chat is selected
+
+    if (!selectedUser) {
+
+        return;
+
+    }
+
+
+    const messageSenderId =
+        Number(
+            message.senderId
+        );
+
+    const messageReceiverId =
+        Number(
+            message.receiverId
+        );
+
+    const currentUserId =
+        Number(
+            currentUser.id
+        );
+
+    const selectedUserId =
+        Number(
+            selectedUser.id
+        );
+
+
+    // ==========================================
+    // CHECK CURRENT CHAT
+    // ==========================================
+
+    const isCurrentChat =
+
+        (
+            messageSenderId ===
+            currentUserId
+
+            &&
+
+            messageReceiverId ===
+            selectedUserId
+        )
+
+        ||
+
+        (
+            messageSenderId ===
+            selectedUserId
+
+            &&
+
+            messageReceiverId ===
+            currentUserId
+        );
+
+
+    if (!isCurrentChat) {
+
+        console.log(
+            "Message belongs to another chat"
+        );
+
+        return;
+
+    }
+
+
+    // ==========================================
+    // CREATE ELEMENTS
+    // ==========================================
 
     const messageWrapper =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     const bubble =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     const text =
-        document.createElement("span");
+        document.createElement(
+            "span"
+        );
 
     const time =
-        document.createElement("span");
+        document.createElement(
+            "span"
+        );
 
 
-    // Check sender
+    // ==========================================
+    // CHECK MY MESSAGE
+    // ==========================================
 
     const isMyMessage =
-        Number(message.senderId) ===
-        Number(currentUser.id);
+        messageSenderId ===
+        currentUserId;
 
 
-    // Wrapper
+    // ==========================================
+    // WRAPPER
+    // ==========================================
 
     messageWrapper.className =
         "message-wrapper";
@@ -767,13 +640,17 @@ function displayMessage(message) {
     }
 
 
-    // Bubble
+    // ==========================================
+    // BUBBLE
+    // ==========================================
 
     bubble.className =
         "message-bubble";
 
 
-    // Message text
+    // ==========================================
+    // MESSAGE TEXT
+    // ==========================================
 
     text.className =
         "message-text";
@@ -782,14 +659,18 @@ function displayMessage(message) {
         message.message;
 
 
-    // Time
+    // ==========================================
+    // TIME
+    // ==========================================
 
     time.className =
         "message-time";
 
 
     const messageDate =
-        new Date(message.createdAt);
+        new Date(
+            message.createdAt
+        );
 
 
     time.textContent =
@@ -802,7 +683,9 @@ function displayMessage(message) {
         );
 
 
-    // Double tick for my messages
+    // ==========================================
+    // DOUBLE TICK
+    // ==========================================
 
     if (isMyMessage) {
 
@@ -812,9 +695,17 @@ function displayMessage(message) {
     }
 
 
-    bubble.appendChild(text);
+    // ==========================================
+    // APPEND
+    // ==========================================
 
-    bubble.appendChild(time);
+    bubble.appendChild(
+        text
+    );
+
+    bubble.appendChild(
+        time
+    );
 
     messageWrapper.appendChild(
         bubble
@@ -826,21 +717,27 @@ function displayMessage(message) {
 
 }
 
+
 // ==========================================
-// SEND MESSAGE
+// SEND MESSAGE USING SOCKET.IO
 // ==========================================
 
-async function sendMessage() {
-
+function sendMessage() {
 
     const message =
         messageInput.value.trim();
 
 
+    // Empty message
+
     if (!message) {
+
         return;
+
     }
 
+
+    // User not selected
 
     if (!selectedUser) {
 
@@ -853,80 +750,58 @@ async function sendMessage() {
     }
 
 
-    try {
+    // Room not joined
 
-        const response =
-            await fetch(
-                "/api/messages",
-                {
-
-                    method: "POST",
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json"
-
-                    },
-
-                    body: JSON.stringify({
-
-                        senderId:
-                            currentUser.id,
-
-                        receiverId:
-                            selectedUser.id,
-
-                        message:
-                            message
-
-                    })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            alert(
-                data.message ||
-                "Message could not be sent"
-            );
-
-            return;
-
-        }
-
-
-        // Clear input
-
-        messageInput.value = "";
-
-
-        // Reload messages
-
-        await loadMessages();
-
-
-        messageInput.focus();
-
-
-    } catch (error) {
-
-        console.error(
-            "Send Message Error:",
-            error
-        );
+    if (!currentRoomId) {
 
         alert(
-            "Server error"
+            "Please open a chat first"
         );
 
+        return;
+
     }
+
+
+    // ==========================================
+    // SEND USING SOCKET.IO
+    // ==========================================
+
+    socketIO.emit(
+        "new_message",
+        {
+
+            roomId:
+                currentRoomId,
+
+            senderId:
+                currentUser.id,
+
+            receiverId:
+                selectedUser.id,
+
+            message:
+                message
+
+        }
+    );
+
+
+    console.log(
+        "Personal message sent:",
+        message
+    );
+
+
+    // ==========================================
+    // CLEAR INPUT
+    // ==========================================
+
+    messageInput.value =
+        "";
+
+
+    messageInput.focus();
 
 }
 
@@ -964,7 +839,7 @@ messageInput.addEventListener(
 
 
 // ==========================================
-// SEARCH
+// SEARCH USERS
 // ==========================================
 
 searchInput.addEventListener(
@@ -983,41 +858,43 @@ searchInput.addEventListener(
             );
 
 
-        users.forEach(function (user) {
+        users.forEach(
+            function (user) {
 
-            const name =
-                user.dataset.name
-                    .toLowerCase();
-
-
-            const email =
-                user.dataset.email
-                    .toLowerCase();
+                const name =
+                    user.dataset.name
+                        .toLowerCase();
 
 
-            if (
-                name.includes(search) ||
-                email.includes(search)
-            ) {
+                const email =
+                    user.dataset.email
+                        .toLowerCase();
 
-                user.style.display =
-                    "flex";
 
-            } else {
+                if (
+                    name.includes(search) ||
+                    email.includes(search)
+                ) {
 
-                user.style.display =
-                    "none";
+                    user.style.display =
+                        "flex";
+
+                } else {
+
+                    user.style.display =
+                        "none";
+
+                }
 
             }
-
-        });
+        );
 
     }
 );
 
 
 // ==========================================
-// SCROLL
+// SCROLL TO BOTTOM
 // ==========================================
 
 function scrollToBottom() {
@@ -1048,32 +925,40 @@ const closeModal =
     );
 
 
-createGroupBtn.addEventListener(
-    "click",
-    function () {
+if (
+    createGroupBtn &&
+    groupModal &&
+    closeModal
+) {
 
-        groupModal.classList.add(
-            "show"
-        );
+    createGroupBtn.addEventListener(
+        "click",
+        function () {
 
-    }
-);
+            groupModal.classList.add(
+                "show"
+            );
+
+        }
+    );
 
 
-closeModal.addEventListener(
-    "click",
-    function () {
+    closeModal.addEventListener(
+        "click",
+        function () {
 
-        groupModal.classList.remove(
-            "show"
-        );
+            groupModal.classList.remove(
+                "show"
+            );
 
-    }
-);
+        }
+    );
+
+}
 
 
 // ==========================================
-// START
+// START APPLICATION
 // ==========================================
 
 loadUsers();

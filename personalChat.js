@@ -1,3 +1,6 @@
+const Message = require("../../models/Message");
+
+
 // ==========================================
 // PERSONAL CHAT HANDLER
 // ==========================================
@@ -31,26 +34,87 @@ const personalChatHandler = function (io, socket) {
 
     socket.on(
         "new_message",
-        function (data) {
+        async function (data) {
 
-            console.log(
-                "New personal message:",
-                data
-            );
+            try {
 
-            const {
-                roomId,
-                message
-            } = data;
+                console.log(
+                    "New personal message:",
+                    data
+                );
 
-            // Send message to everyone
-            // inside the same room
-            io.to(
-                roomId
-            ).emit(
-                "new_message",
-                data
-            );
+
+                const {
+                    roomId,
+                    senderId,
+                    receiverId,
+                    message
+                } = data;
+
+
+                // Check required fields
+                if (
+                    !roomId ||
+                    !senderId ||
+                    !receiverId ||
+                    !message
+                ) {
+
+                    console.log(
+                        "Required message data is missing"
+                    );
+
+                    return;
+
+                }
+
+
+                // ==========================================
+                // SAVE MESSAGE IN DATABASE
+                // ==========================================
+
+                const newMessage =
+                    await Message.create({
+
+                        senderId,
+                        receiverId,
+                        message
+
+                    });
+
+
+                console.log(
+                    "Message saved:",
+                    newMessage.id
+                );
+
+
+                // ==========================================
+                // SEND MESSAGE TO PERSONAL ROOM
+                // ==========================================
+
+                io.to(
+                    roomId
+                ).emit(
+                    "new_message",
+                    newMessage
+                );
+
+
+                console.log(
+                    "Message sent to personal room:",
+                    roomId
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Personal Message Error:",
+                    error
+                );
+
+            }
 
         }
     );

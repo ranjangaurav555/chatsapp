@@ -1,10 +1,6 @@
 const Message = require("../models/Message");
 const { Op } = require("sequelize");
 
-const {
-    sendMessageToUser
-} = require("../websocket");
-
 
 // ==========================================
 // SEND MESSAGE
@@ -21,6 +17,7 @@ const sendMessage = async (req, res) => {
         } = req.body;
 
 
+        // Check required fields
         if (
             !senderId ||
             !receiverId ||
@@ -37,38 +34,52 @@ const sendMessage = async (req, res) => {
         }
 
 
+        // Save message in database
         const newMessage =
             await Message.create({
 
-                senderId:
-                    senderId,
-
-                receiverId:
-                    receiverId,
-
-                message:
-                    message
+                senderId,
+                receiverId,
+                message
 
             });
 
-            // ==========================================
-// SEND LIVE MESSAGE
-// ==========================================
 
-console.log(
-    "Sending live message to receiver:",
-    receiverId
-);
-
-sendMessageToUser(
-    receiverId,
-    {
-        type: "new_message",
-        message: newMessage
-    }
-);
+        console.log(
+            "Message saved:",
+            newMessage.id
+        );
 
 
+        // ==========================================
+        // SOCKET.IO LIVE MESSAGE
+        // ==========================================
+
+        const io =
+            req.app.get("io");
+
+
+        if (io) {
+
+            io.to(
+                `user_${receiverId}`
+            ).emit(
+                "new_message",
+                newMessage
+            );
+
+
+            console.log(
+                "Socket.IO message sent to user:",
+                receiverId
+            );
+
+        }
+
+
+        // ==========================================
+        // RESPONSE
+        // ==========================================
 
         return res.status(201).json({
 
@@ -139,13 +150,11 @@ const getMessages = async (req, res) => {
 
                         {
                             senderId: user1,
-
                             receiverId: user2
                         },
 
                         {
                             senderId: user2,
-
                             receiverId: user1
                         }
 
@@ -154,12 +163,7 @@ const getMessages = async (req, res) => {
                 },
 
                 order: [
-
-                    [
-                        "createdAt",
-                        "ASC"
-                    ]
-
+                    ["createdAt", "ASC"]
                 ]
 
             });
@@ -167,8 +171,7 @@ const getMessages = async (req, res) => {
 
         return res.status(200).json({
 
-            messages:
-                messages
+            messages
 
         });
 
@@ -193,10 +196,13 @@ const getMessages = async (req, res) => {
 };
 
 
+// ==========================================
+// EXPORT
+// ==========================================
+
 module.exports = {
 
     sendMessage,
-
     getMessages
 
 };
