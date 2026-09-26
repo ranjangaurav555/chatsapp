@@ -87,6 +87,14 @@ app.use(
     userRoutes
 );
 
+app.get("/test-api", function (req, res) {
+
+    res.json({
+        message: "API is working"
+    });
+
+});
+
 app.use(
     "/api/messages",
     messageRoutes
