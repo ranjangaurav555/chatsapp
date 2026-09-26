@@ -25,12 +25,12 @@ localStorage.getItem("token");
 
 const socketIO =
 io(
-"http://localhost:3000",
-{
-auth: {
-token: token
-}
-}
+    window.location.origin,
+    {
+        auth: {
+            token: token
+        }
+    }
 );
 
 // ==========================================
