@@ -1,3 +1,7 @@
+const API_URL =
+    "https://chatsapp-kwqy.onrender.com";
+
+
 const userData =
 localStorage.getItem("user");
 
@@ -25,7 +29,7 @@ localStorage.getItem("token");
 
 const socketIO =
 io(
-"http://localhost:3000",
+"https://chatsapp-kwqy.onrender.com",
 {
 auth: {
 token: token
@@ -105,7 +109,7 @@ try {
 
     const response =
         await fetch(
-            `/api/users/check-email?email=${encodeURIComponent(email)}`
+            `${API_URL}/api/users/check-email?email=${encodeURIComponent(email)}`
         );
 
     const data =
@@ -344,107 +348,98 @@ let selectedUser = null;
 // ==========================================
 // LOAD USERS
 // ==========================================
-
 async function loadUsers() {
 
+    try {
 
-try {
+        const response =
+            await fetch(
+                `${API_URL}/api/users/all`
+            );
 
-    const response =
-        await fetch(
-            "/api/users/all"
-        );
+        const data =
+            await response.json();
 
-    const data =
-        await response.json();
+        usersList.innerHTML =
+            "";
 
-    usersList.innerHTML =
-        "";
+        data.users.forEach(
+            function (user) {
 
-    data.users.forEach(
-        function (user) {
+                // Hide only logged-in user
+                if (
+                    Number(user.id) ===
+                    Number(currentUser.id)
+                ) {
+                    return;
+                }
 
-            // Don't show logged-in user
-
-            if (
-                Number(user.id) ===
-                Number(currentUser.id)
-            ) {
-
-                return;
-
-            }
-
-            const userItem =
-                document.createElement(
-                    "div"
-                );
-
-            userItem.className =
-                "user-item";
-
-            userItem.dataset.name =
-                user.name;
-
-            userItem.dataset.email =
-                user.email;
-
-            userItem.innerHTML = `
-
-                <div class="avatar">
-
-                    ${user.name
-                        .charAt(0)
-                        .toUpperCase()}
-
-                </div>
-
-                <div class="user-info">
-
-                    <h4>
-                        ${user.name}
-                    </h4>
-
-                    <p>
-                        ${user.email}
-                    </p>
-
-                </div>
-
-            `;
-
-            // Open chat
-
-            userItem.addEventListener(
-                "click",
-                function () {
-
-                    openChat(
-                        user
+                const userItem =
+                    document.createElement(
+                        "div"
                     );
 
-                }
-            );
+                userItem.className =
+                    "user-item";
 
-            usersList.appendChild(
-                userItem
-            );
+                userItem.dataset.name =
+                    user.name;
 
-        }
-    );
+                userItem.dataset.email =
+                    user.email;
 
-} catch (error) {
+                userItem.innerHTML = `
 
-    console.error(
-        "Load Users Error:",
-        error
-    );
+                    <div class="avatar">
+
+                        ${user.name
+                            .charAt(0)
+                            .toUpperCase()}
+
+                    </div>
+
+                    <div class="user-info">
+
+                        <h4>
+                            ${user.name}
+                        </h4>
+
+                        <p>
+                            ${user.email}
+                        </p>
+
+                    </div>
+
+                `;
+
+                userItem.addEventListener(
+                    "click",
+                    function () {
+
+                        openChat(
+                            user
+                        );
+
+                    }
+                );
+
+                usersList.appendChild(
+                    userItem
+                );
+
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Load Users Error:",
+            error
+        );
+
+    }
 
 }
-
-
-}
-
 // ==========================================
 // OPEN PERSONAL CHAT
 // ==========================================
@@ -555,7 +550,7 @@ try {
 
     const response =
         await fetch(
-            `/api/messages?user1=${currentUser.id}&user2=${selectedUser.id}`
+            `${API_URL}/api/messages?user1=${currentUser.id}&user2=${selectedUser.id}`
         );
 
     const data =
@@ -1831,7 +1826,7 @@ try {
 
     const response =
         await fetch(
-            "/api/media/upload",
+            `${API_URL}/api/media/upload`,
             {
 
                 method:
@@ -2094,7 +2089,7 @@ try {
 
     const response =
         await fetch(
-            "/api/users/all"
+             `${API_URL}/api/users/all`
         );
 
     const data =
@@ -2229,7 +2224,7 @@ async function () {
 
         const response =
             await fetch(
-                "/api/groups",
+                    `${API_URL}/api/groups`,
                 {
 
                     method:
@@ -2333,7 +2328,7 @@ try {
 
     const response =
         await fetch(
-            "/api/groups",
+               `${API_URL}/api/groups`,
             {
 
                 method:
@@ -2450,7 +2445,7 @@ try {
 
     const response =
         await fetch(
-            `/api/groups/${groupId}/messages`,
+             `${API_URL}/api/groups/${groupId}/messages`,
             {
                 method:
                     "GET",
