@@ -75,9 +75,10 @@ const userRoutes =
 const messageRoutes =
     require("./routes/messageRoutes");
 
-    const groupRoutes = require("./routes/groupRoutes");
+const groupRoutes =
+    require("./routes/groupRoutes");
 
-    const mediaRoutes =
+const mediaRoutes =
     require("./routes/mediaRoutes");
 
 
@@ -91,7 +92,10 @@ app.use(
     messageRoutes
 );
 
-app.use("/api/groups", groupRoutes);
+app.use(
+    "/api/groups",
+    groupRoutes
+);
 
 app.use(
     "/api/media",
@@ -131,22 +135,36 @@ sequelize.sync()
             "Database Tables Created Successfully"
         );
 
-      server.listen(
-    process.env.PORT || 3000,
-    "0.0.0.0",
-    function () {
+        server.listen(
+            process.env.PORT || 3000,
+            "0.0.0.0",
+            function () {
 
-        console.log(
-            "Server Running on port " +
-            (process.env.PORT || 3000)
+                if (
+                    process.env.NODE_ENV ===
+                    "production"
+                ) {
+
+                    console.log(
+                        "Server Running on port " +
+                        (process.env.PORT || 3000)
+                    );
+
+                } else {
+
+                    console.log(
+                        "Server Running on http://localhost:3000"
+                    );
+
+                }
+
+                console.log(
+                    "Socket.IO Server Running"
+                );
+
+            }
         );
 
-        console.log(
-            "Socket.IO Server Running"
-        );
-
-    }
-);
     })
     .catch(function (error) {
 
