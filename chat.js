@@ -1,6 +1,12 @@
-const API_URL =
-    "https://chatsapp-kwqy.onrender.com";
+// ==========================================
+// API URL
+// ==========================================
 
+const API_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:3000"
+        : "https://chatsapp-wz1p.onrender.com";
 
 const userData =
 localStorage.getItem("user");
@@ -29,12 +35,12 @@ localStorage.getItem("token");
 
 const socketIO =
 io(
-"https://chatsapp-kwqy.onrender.com",
-{
-auth: {
-token: token
-}
-}
+    API_URL,
+    {
+        auth: {
+            token: token
+        }
+    }
 );
 
 // ==========================================
