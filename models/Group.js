@@ -27,7 +27,7 @@ const Group = sequelize.define("Group", {
 
 }, {
 
-    tableName: "Groups",
+    tableName: "groups",
 
     timestamps: true
 

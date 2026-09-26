@@ -111,7 +111,7 @@ const GroupMessage =
         {
 
             tableName:
-                "GroupMessages",
+                "groupMessages",
 
             timestamps:
                 true

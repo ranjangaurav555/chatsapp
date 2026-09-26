@@ -106,7 +106,7 @@ const Message =
         {
 
             tableName:
-                "Messages",
+                "messages",
 
             timestamps:
                 true

@@ -21,7 +21,7 @@ const GroupMember = sequelize.define("GroupMember", {
 
 }, {
 
-    tableName: "GroupMembers",
+    tableName: "groupMembers",
 
     timestamps: true
 
