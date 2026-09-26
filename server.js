@@ -131,21 +131,22 @@ sequelize.sync()
             "Database Tables Created Successfully"
         );
 
-        server.listen(
-            3000,
-            function () {
+      server.listen(
+    process.env.PORT || 3000,
+    "0.0.0.0",
+    function () {
 
-                console.log(
-                    "Server Running on http://localhost:3000"
-                );
-
-                console.log(
-                    "Socket.IO Server Running"
-                );
-
-            }
+        console.log(
+            "Server Running on port " +
+            (process.env.PORT || 3000)
         );
 
+        console.log(
+            "Socket.IO Server Running"
+        );
+
+    }
+);
     })
     .catch(function (error) {
 
