@@ -1,0 +1,297 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Chat App</title>
+
+    <link rel="stylesheet"
+        href="chat.css">
+
+</head>
+
+<body>
+
+    <div class="chat-container">
+
+
+        <!-- ================= LEFT SIDEBAR ================= -->
+
+        <div class="sidebar">
+
+
+            <!-- LOGGED IN USER -->
+
+            <div class="sidebar-header">
+
+                <div class="profile">
+
+                    <div
+                        class="avatar"
+                        id="myAvatar">
+                        A
+                    </div>
+
+                    <div class="profile-text">
+
+                        <h3 id="myName">
+                            Alok
+                        </h3>
+
+                        <span>
+                            Online
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="three-dot">
+                    ⋮
+                </div>
+
+            </div>
+
+
+            <!-- SEARCH -->
+
+            <div class="search-container">
+
+                <span class="search-icon">
+                    🔍
+                </span>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search">
+
+            </div>
+
+
+            <!-- CREATE GROUP -->
+
+            <button
+                class="create-group"
+                id="createGroupBtn">
+
+                + Create Group
+
+            </button>
+
+
+            <!-- USERS -->
+
+            <div class="section-heading">
+
+                Users
+
+            </div>
+
+
+            <div
+                class="users-list"
+                id="usersList">
+
+                <!-- Database users will come here -->
+
+            </div>
+
+
+            <!-- GROUPS -->
+
+            <div class="section-heading">
+
+                Groups
+
+            </div>
+
+
+            <div
+                class="groups-list"
+                id="groupsList">
+
+                <!-- Groups will come here -->
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================= RIGHT CHAT ================= -->
+
+        <div class="chat-area">
+
+
+            <!-- CHAT HEADER -->
+
+            <div class="chat-header">
+
+                <div class="chat-profile">
+
+                    <div
+                        class="avatar"
+                        id="chatAvatar">
+                        ?
+                    </div>
+
+                    <div>
+
+                        <h3 id="chatName">
+                            Select a chat
+                        </h3>
+
+                        <span id="chatStatus">
+                            offline
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="three-dot">
+                    ⋮
+                </div>
+
+            </div>
+
+
+            <!-- CHAT BODY -->
+
+            <div
+                class="chat-body"
+                id="chatMessages">
+
+                <div class="select-chat">
+
+                    <h2>
+                        Select a chat
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <!-- MESSAGE BOX -->
+
+            <div class="message-area">
+
+                <button
+                    class="message-icon"
+                    id="emojiBtn">
+
+                    😊
+
+                </button>
+
+
+                <button
+                    class="message-icon"
+                    id="attachmentBtn">
+
+                    📎
+
+                </button>
+
+                <input
+    type="file"
+    id="mediaInput"
+    accept="image/*,video/*"
+    hidden>
+
+
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Type a message..."
+                    autocomplete="off">
+
+
+                <button
+                    class="send-button"
+                    id="sendBtn">
+
+                    ➤
+
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= CREATE GROUP MODAL ================= -->
+
+    <div
+        class="group-modal"
+        id="groupModal">
+
+
+        <div class="group-box">
+
+
+            <div class="group-title">
+
+                <h2>
+                    Create Group
+                </h2>
+
+                <button
+                    id="closeModal">
+
+                    ✕
+
+                </button>
+
+            </div>
+
+
+            <input
+                type="text"
+                id="groupName"
+                placeholder="Group name">
+
+
+            <h4>
+                Select users
+            </h4>
+
+
+            <div
+                id="groupUsersList"
+                class="group-users">
+
+            </div>
+
+
+            <button
+                id="saveGroupBtn"
+                class="save-group">
+
+                Create Group
+
+            </button>
+
+
+        </div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="chat.js?v=2"></script>
+
+</body>
+
+</html>
