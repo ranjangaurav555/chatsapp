@@ -1,3 +1,4 @@
+
 const { DataTypes } = require("sequelize");
 
 const sequelize =
@@ -48,7 +49,62 @@ const GroupMessage =
                     DataTypes.TEXT,
 
                 allowNull:
-                    false
+                    true
+            },
+
+
+            // ==========================================
+            // MESSAGE TYPE
+            // ==========================================
+
+            type: {
+                type:
+                    DataTypes.STRING,
+
+                allowNull:
+                    false,
+
+                defaultValue:
+                    "text"
+            },
+
+
+            // ==========================================
+            // S3 OBJECT KEY
+            // ==========================================
+
+            mediaKey: {
+                type:
+                    DataTypes.TEXT,
+
+                allowNull:
+                    true
+            },
+
+
+            // ==========================================
+            // ORIGINAL FILE NAME
+            // ==========================================
+
+            fileName: {
+                type:
+                    DataTypes.STRING,
+
+                allowNull:
+                    true
+            },
+
+
+            // ==========================================
+            // MIME TYPE
+            // ==========================================
+
+            mimeType: {
+                type:
+                    DataTypes.STRING,
+
+                allowNull:
+                    true
             }
 
         },
@@ -66,3 +122,4 @@ const GroupMessage =
 
 module.exports =
     GroupMessage;
+

@@ -286,9 +286,97 @@ const getAllUsers = async (req, res) => {
 
 };
 
+// ==========================================
+// CHECK USER BY EMAIL
+// ==========================================
+
+const checkUserByEmail = async (req, res) => {
+
+    try {
+
+        const {
+            email
+        } = req.query;
+
+
+        // Check email
+
+        if (!email) {
+
+            return res.status(400).json({
+
+                message: "Email is required"
+
+            });
+
+        }
+
+
+        // Find user
+
+        const user =
+            await User.findOne({
+
+                where: {
+                    email: email
+                },
+
+                attributes: [
+                    "id",
+                    "name",
+                    "email",
+                    "phone"
+                ]
+
+            });
+
+
+        // User not found
+
+        if (!user) {
+
+            return res.status(404).json({
+
+                message: "User not found"
+
+            });
+
+        }
+
+
+        // User found
+
+        return res.status(200).json({
+
+            exists: true,
+
+            user: user
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Check User Email Error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            message: "Server error"
+
+        });
+
+    }
+
+};
+
 
 module.exports = {
     signup,
     login,
-    getAllUsers
+    getAllUsers,
+    checkUserByEmail
 };

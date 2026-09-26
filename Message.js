@@ -1,35 +1,120 @@
+
 const { DataTypes } = require("sequelize");
 
-const sequelize = require("../db");
+const sequelize =
+    require("../db");
 
-const Message = sequelize.define(
-    "Message",
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
+const Message =
+    sequelize.define(
+        "Message",
+        {
+
+            id: {
+                type:
+                    DataTypes.INTEGER,
+
+                autoIncrement:
+                    true,
+
+                primaryKey:
+                    true
+            },
+
+
+            senderId: {
+                type:
+                    DataTypes.INTEGER,
+
+                allowNull:
+                    false
+            },
+
+
+            receiverId: {
+                type:
+                    DataTypes.INTEGER,
+
+                allowNull:
+                    false
+            },
+
+
+            message: {
+                type:
+                    DataTypes.TEXT,
+
+                allowNull:
+                    true
+            },
+
+
+            // ==========================================
+            // MESSAGE TYPE
+            // ==========================================
+
+            type: {
+                type:
+                    DataTypes.STRING,
+
+                allowNull:
+                    false,
+
+                defaultValue:
+                    "text"
+            },
+
+
+            // ==========================================
+            // S3 OBJECT KEY
+            // ==========================================
+
+            mediaKey: {
+                type:
+                    DataTypes.TEXT,
+
+                allowNull:
+                    true
+            },
+
+
+            // ==========================================
+            // ORIGINAL FILE NAME
+            // ==========================================
+
+            fileName: {
+                type:
+                    DataTypes.STRING,
+
+                allowNull:
+                    true
+            },
+
+
+            // ==========================================
+            // MIME TYPE
+            // ==========================================
+
+            mimeType: {
+                type:
+                    DataTypes.STRING,
+
+                allowNull:
+                    true
+            }
+
         },
+        {
 
-        senderId: {
-            type: DataTypes.INTEGER,
-            allowNull: false
-        },
+            tableName:
+                "Messages",
 
-        receiverId: {
-            type: DataTypes.INTEGER,
-            allowNull: false
-        },
+            timestamps:
+                true
 
-        message: {
-            type: DataTypes.TEXT,
-            allowNull: false
         }
-    },
-    {
-        tableName: "Messages",
-        timestamps: true
-    }
-);
+    );
 
-module.exports = Message;
+
+module.exports =
+    Message;
+

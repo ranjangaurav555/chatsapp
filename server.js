@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -75,6 +77,9 @@ const messageRoutes =
 
     const groupRoutes = require("./routes/groupRoutes");
 
+    const mediaRoutes =
+    require("./routes/mediaRoutes");
+
 
 app.use(
     "/api/users",
@@ -87,6 +92,11 @@ app.use(
 );
 
 app.use("/api/groups", groupRoutes);
+
+app.use(
+    "/api/media",
+    mediaRoutes
+);
 
 
 // ==========================================

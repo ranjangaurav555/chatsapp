@@ -5,7 +5,8 @@ const router = express.Router();
 const {
     signup,
     login,
-     getAllUsers
+     getAllUsers,
+    checkUserByEmail
 } = require("../controllers/userController");
 
 
@@ -21,6 +22,10 @@ router.post("/login", login);
 //all
 
 router.get("/all", getAllUsers);
+
+// Check user by email
+
+router.get("/check-email",checkUserByEmail);
 
 
 module.exports = router;
