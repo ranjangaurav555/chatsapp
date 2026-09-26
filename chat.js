@@ -31,17 +31,17 @@ JSON.parse(userData);
 // ==========================================
 
 const token =
-localStorage.getItem("token");
+    localStorage.getItem("token");
 
 const socketIO =
-io(
-    API_URL,
-    {
-        auth: {
-            token: token
+    io(
+        API_URL,
+        {
+            auth: {
+                token: token
+            }
         }
-    }
-);
+    );
 
 // ==========================================
 // SOCKET.IO CONNECT
