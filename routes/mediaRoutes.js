@@ -8,7 +8,7 @@ const upload =
     require("../middleware/upload");
 
 const mediaController =
-    require("../controllers/mediaController");
+    require("../controllers/mediacontroller");
 
 const httpAuthentication =
     require("../httpAuth");
