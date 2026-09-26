@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>WhatsApp - Sign Up</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <div class="container">
+
+        <div class="card">
+
+
+            <div class="logo">
+                WhatsApp
+            </div>
+
+
+            <h1>
+                Get Started
+            </h1>
+
+
+            <p class="subtitle">
+                Create an account to start chatting.
+            </p>
+
+
+            <form id="signupForm">
+
+
+                <label>
+                    Full Name
+                </label>
+
+
+                <input
+                    type="text"
+                    id="name"
+                    placeholder="Enter your full name"
+                    required
+                >
+
+
+                <label>
+                    Email Address
+                </label>
+
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+
+                <label>
+                    Phone Number
+                </label>
+
+
+                <input
+                    type="tel"
+                    id="phone"
+                    placeholder="Enter phone number"
+                    required
+                >
+
+
+                <label>
+                    Password
+                </label>
+
+
+                <div class="passwordBox">
+
+
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        placeholder="Create password"
+                        required
+                    >
+
+
+                    <button
+                        type="button"
+                        id="showSignupPassword"
+                    >
+                        Show
+                    </button>
+
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="mainBtn"
+                >
+                    Create Account
+                </button>
+
+
+            </form>
+
+
+            <p
+                id="signupMessage"
+                class="message"
+            ></p>
+
+
+            <p class="switchText">
+
+                Already have an account?
+
+                <a href="login.html">
+                    Login
+                </a>
+
+            </p>
+
+
+        </div>
+
+    </div>
+
+
+    <script src="signup.js"></script>
+
+</body>
+
+</html>
