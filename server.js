@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const http = require("http");
+const aiRoutes = require("./routes/aiRoutes");
 
 const sequelize = require("./db");
 
@@ -38,6 +39,10 @@ app.use(
     )
 );
 
+app.use(
+    "/api/ai",
+    aiRoutes
+);
 
 // ==========================================
 // HOME ROUTE

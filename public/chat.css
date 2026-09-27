@@ -682,3 +682,48 @@ body {
         display: none;
     }
 }
+
+/* ==========================================
+   AI TYPING SUGGESTIONS
+========================================== */
+
+.ai-typing-suggestions {
+    display: flex;
+    gap: 8px;
+    padding: 6px 12px;
+    flex-wrap: wrap;
+    background: #f5f5f5;
+}
+
+
+/* ==========================================
+   AI SMART REPLIES
+========================================== */
+
+.ai-smart-replies {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    background: #ffffff;
+}
+
+
+/* ==========================================
+   AI SUGGESTION BUTTON
+========================================== */
+
+.ai-suggestion-button {
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 18px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+}
+
+
+.ai-suggestion-button:hover {
+    background: #f0f0f0;
+}

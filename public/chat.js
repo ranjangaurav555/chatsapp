@@ -165,6 +165,10 @@ console.log(
 // RECEIVE PERSONAL MESSAGE
 // ==========================================
 
+// ==========================================
+// RECEIVE PERSONAL MESSAGE
+// ==========================================
+
 socketIO.on(
 "new_message",
 function (message) {
@@ -175,15 +179,47 @@ function (message) {
         message
     );
 
+
+    // Display message
+
     displayMessage(
         message
     );
 
+
+    // ==========================================
+    // CHECK IF MESSAGE IS FROM OTHER USER
+    // ==========================================
+
+    const senderId =
+        Number(
+            message.senderId
+        );
+
+    const currentUserId =
+        Number(
+            currentUser.id
+        );
+
+
+    if (
+        senderId !==
+        currentUserId
+    ) {
+
+        // Generate AI smart replies
+
+        getSmartReplies(
+            message.message
+        );
+
+    }
+
+
     scrollToBottom();
 
+
 }
-
-
 );
 
 // ==========================================
@@ -312,6 +348,16 @@ const sendBtn =
 document.getElementById(
 "sendBtn"
 );
+
+const aiTypingSuggestions =
+    document.getElementById(
+        "aiTypingSuggestions"
+    );
+
+const aiSmartReplies =
+    document.getElementById(
+        "aiSmartReplies"
+    );
 
 const attachmentBtn =
 document.getElementById(
@@ -2650,6 +2696,300 @@ console.log(
 
 messageInput.focus();
 
+
+}
+
+// ==========================================
+// AI PREDICTIVE TYPING
+// ==========================================
+
+let typingTimer;
+
+messageInput.addEventListener(
+    "input",
+    function () {
+
+        clearTimeout(typingTimer);
+
+        const draft =
+            messageInput.value.trim();
+
+
+        // Clear suggestions
+        if (!draft) {
+
+            aiTypingSuggestions.innerHTML =
+                "";
+
+            return;
+        }
+
+
+        // Wait before calling Gemini
+        typingTimer =
+            setTimeout(
+                function () {
+
+                    getTypingSuggestions(
+                        draft
+                    );
+
+                },
+                700
+            );
+
+    }
+);
+
+
+// ==========================================
+// GET TYPING SUGGESTIONS
+// ==========================================
+
+async function getTypingSuggestions(
+    draft
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/ai/suggestions",
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            type:
+                                "typing",
+
+                            draft:
+                                draft
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.success ||
+            !Array.isArray(
+                data.suggestions
+            )
+        ) {
+
+            return;
+        }
+
+
+        showTypingSuggestions(
+            data.suggestions
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            "AI Typing Error:",
+            error
+        );
+
+    }
+
+}
+
+
+// ==========================================
+// SHOW TYPING SUGGESTIONS
+// ==========================================
+
+function showTypingSuggestions(
+    suggestions
+) {
+
+    aiTypingSuggestions.innerHTML =
+        "";
+
+
+    suggestions.forEach(
+        function (suggestion) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "ai-suggestion-button";
+
+
+            button.textContent =
+                suggestion;
+
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    messageInput.value +=
+                        (
+                            messageInput.value
+                                ? " "
+                                : ""
+                        ) +
+                        suggestion;
+
+
+                    messageInput.focus();
+
+
+                    aiTypingSuggestions.innerHTML =
+                        "";
+
+                }
+            );
+
+
+            aiTypingSuggestions.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+// ==========================================
+// AI SMART REPLIES
+// ==========================================
+
+async function getSmartReplies(
+    incomingMessage
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/ai/suggestions",
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            type:
+                                "reply",
+
+                            message:
+                                incomingMessage
+
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.success ||
+            !Array.isArray(
+                data.suggestions
+            )
+        ) {
+
+            return;
+        }
+
+
+        showSmartReplies(
+            data.suggestions
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            "AI Smart Reply Error:",
+            error
+        );
+
+    }
+
+}
+
+
+// ==========================================
+// SHOW SMART REPLIES
+// ==========================================
+
+function showSmartReplies(
+    replies
+) {
+
+    aiSmartReplies.innerHTML =
+        "";
+
+
+    replies.forEach(
+        function (reply) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "ai-suggestion-button";
+
+
+            button.textContent =
+                reply;
+
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    messageInput.value =
+                        reply;
+
+
+                    messageInput.focus();
+
+
+                    aiSmartReplies.innerHTML =
+                        "";
+
+                }
+            );
+
+
+            aiSmartReplies.appendChild(
+                button
+            );
+
+        }
+    );
 
 }
 
