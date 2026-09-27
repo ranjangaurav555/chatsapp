@@ -13,6 +13,7 @@ const setupSocketIO =
 const app = express();
 
 
+
 // ==========================================
 // MIDDLEWARE
 // ==========================================
@@ -63,6 +64,24 @@ require("./models/Message");
 require("./models/Group");
 require("./models/GroupMember");
 require("./models/GroupMessage");
+
+
+
+const ArchivedChat =
+    require("./models/ArchivedChat");
+
+console.log(
+    "ArchivedChat model loaded:",
+    ArchivedChat.tableName
+);
+
+
+// ==========================================
+// START ARCHIVE JOB
+// ==========================================
+
+require("./jobs/archiveMessages");
+
 
 
 // ==========================================
